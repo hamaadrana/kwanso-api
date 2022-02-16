@@ -1,7 +1,6 @@
 class Card < ApplicationRecord
 
   # Perfom Validations on Card
-
   validates :card, length: 20
   validates :cvv, length: 3
   validate :is_past?

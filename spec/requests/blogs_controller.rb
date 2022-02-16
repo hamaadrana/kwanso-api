@@ -1,10 +1,11 @@
 RSpec.describe 'Blogs', type: :request do
   # initialize test data
+  let!(:user) { create(:user) }
   let!(:blogs) { create_list(:blog, 10) }
   let(:blog_id) { blogs.first.id }
 
   describe 'GET /blogs' do
-    before { get '/api/v1/blogs' }
+    before { get '/api/v1/blogs', headers: auth_headers_for(user) }
     it 'returns blogs' do
       expect(json).not_to be_empty
       expect(json.size).to eq(10)
@@ -15,7 +16,7 @@ RSpec.describe 'Blogs', type: :request do
   end
 
   describe 'GET /blogs/:id' do
-    before { get "/api/v1/blogs/#{blog_id}" }
+    before { get "/api/v1/blogs/#{blog_id}", headers: auth_headers_for(user) }
     context 'when blog exists' do
       it 'returns status code 200' do
         expect(response).to have_http_status(200)
@@ -37,21 +38,19 @@ RSpec.describe 'Blogs', type: :request do
   end
 
   describe 'POST /blogs/:id' do
-    let!(:history) { create(:category) }
     let(:valid_attributes) do
-      { title: 'Whispers of Time', author: 'Dr. Krishna Saksena',
-        category_id: history.id }
+      { title: 'Whispers of Time', body: 'Dr. Krishna Saksena' }
     end
 
     context 'when request attributes are valid' do
-      before { post '/api/v1/blogs', params: valid_attributes }
+      before { post '/api/v1/blogs', params: valid_attributes, headers: auth_headers_for(user) }
       it 'returns status code 201' do
         expect(response).to have_http_status(201)
       end
     end
 
     context 'when an invalid request' do
-      before { post '/api/v1/blogs', params: {} }
+      before { post '/api/v1/blogs', params: {}, headers: auth_headers_for(user) }
       it 'returns status code 422' do
         expect(response).to have_http_status(422)
       end
@@ -63,7 +62,7 @@ RSpec.describe 'Blogs', type: :request do
 
   describe 'PUT /blogs/:id' do
     let(:valid_attributes) { { title: 'Saffron Swords' } }
-    before { put "/api/v1/blogs/#{blog_id}", params: valid_attributes }
+    before { put "/api/v1/blogs/#{blog_id}", params: valid_attributes, headers: auth_headers_for(user) }
 
     context 'when blog exists' do
       it 'returns status code 204' do
@@ -87,7 +86,7 @@ RSpec.describe 'Blogs', type: :request do
   end
 
   describe 'DELETE /blogs/:id' do
-    before { delete "/api/v1/blogs/#{blog_id}" }
+    before { delete "/api/v1/blogs/#{blog_id}", headers: auth_headers_for(user) }
     it 'returns status code 204' do
       expect(response).to have_http_status(204)
     end
